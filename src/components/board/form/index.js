@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import boardAPI from '../../../api/board';
 import { useNavigate, useParams } from 'react-router-dom';
+import AuthChecker from '../../auth/checker';
 
 const BoardForm = () => {
     const params = useParams();
@@ -58,29 +59,32 @@ const BoardForm = () => {
     }, [postId]);
 
     return (
-        <BoardFormContainer>
-            <FormWrapper>
-                <div>
-                    <InputField
-                        type="text"
-                        value={title}
-                        onChange={(event) => setTitle(event.target.value)}
-                        placeholder="제목을 입력하세요."
-                    />
-                </div>
+        <>
+            <AuthChecker />
+            <BoardFormContainer>
+                <FormWrapper>
+                    <div>
+                        <InputField
+                            type="text"
+                            value={title}
+                            onChange={(event) => setTitle(event.target.value)}
+                            placeholder="제목을 입력하세요."
+                        />
+                    </div>
 
-                <div>
-                    <TextAreaField
-                        placeholder="내용을 입력하세요."
-                        value={content}
-                        onChange={(event) => setContent(event.target.value)}
-                    ></TextAreaField>
-                    <SubmitButton type="submit" onClick={onSubmit}>
-                        {isNaN(postId) ? '작성하기' : '수정하기'}
-                    </SubmitButton>
-                </div>
-            </FormWrapper>
-        </BoardFormContainer>
+                    <div>
+                        <TextAreaField
+                            placeholder="내용을 입력하세요."
+                            value={content}
+                            onChange={(event) => setContent(event.target.value)}
+                        ></TextAreaField>
+                        <SubmitButton type="submit" onClick={onSubmit}>
+                            {isNaN(postId) ? '작성하기' : '수정하기'}
+                        </SubmitButton>
+                    </div>
+                </FormWrapper>
+            </BoardFormContainer>
+        </>
     );
 };
 

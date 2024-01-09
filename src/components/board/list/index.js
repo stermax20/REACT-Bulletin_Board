@@ -5,37 +5,115 @@ import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
 const BoardList = () => {
+    const [isLoading, setIsLoading] = useState(true);
+    const [isError, setIsError] = useState(false);
     const [boards, setBoards] = useState([]);
+
+    const [totalPages, setTotalPages] = useState(0);
+    const [pagesIndex, setPagesIndex] = useState(0);
+
+    const [page, setPage] = useState(1);
+
+    const [pages, setPages] = useState([]);
 
     useEffect(() => {
         const fetchBoards = async () => {
-            const response = await boardAPI.fetchAll();
-            const boards = response.data.content;
-            setBoards(boards);
+            try {
+                setIsLoading(true);
+                setIsError(false);
+
+                const response = await boardAPI.fetchAll(page - 1);
+
+                const boards = response.data.content;
+                setTotalPages(response.data.totalPages);
+
+                setBoards(boards);
+            } catch (error) {
+                setIsError(true);
+            }
+
+            setIsLoading(false);
         };
+
         fetchBoards();
-    }, []);
+    }, [page]);
+
+    useEffect(() => {
+        let result = [];
+        let temp = [];
+
+        for (let i = 1; i <= totalPages; i++) {
+            temp.push(i);
+
+            if (temp.length % 5 === 0) {
+                result.push(temp);
+
+                temp = [];
+            }
+        }
+
+        if (temp.length > 0) {
+            result.push(temp);
+        }
+
+        setPages(result);
+    }, [totalPages]);
 
     return (
-        <Wrapper>
-            <Header>
-                <Title>게시글 목록</Title>
-                <WriteButton to="/posts/write">글 작성하기</WriteButton>
-            </Header>
-            <BoardWrapper>
-                {boards.map((board) => (
-                    <BoardBox to={`/posts/${board.id}`} key={board.id}>
-                        <ContentBox>
-                            <BoardTitle>{board.title}</BoardTitle>
-                            <BoardTime>작성일: {dayjs(board.createdAt).format('YYYY년 MM월 DD일 HH시 mm분')}</BoardTime>
-                            <BoardAuthor>
-                                작성자: {board.user === null ? '탈퇴된 사용자입니다.' : board.user.name}
-                            </BoardAuthor>
-                        </ContentBox>
-                    </BoardBox>
-                ))}
-            </BoardWrapper>
-        </Wrapper>
+        <div>
+            <Wrapper>
+                <Header>
+                    <Title>게시글 목록</Title>
+                    <WriteButton to="/posts/write">글 작성하기</WriteButton>
+                </Header>
+                <BoardWrapper>
+                    {isLoading
+                        ? '로딩중'
+                        : isError
+                        ? '오류 발생'
+                        : boards.map((board) => (
+                              <BoardBox to={`/posts/${board.id}`} key={board.id}>
+                                  <ContentBox>
+                                      <BoardTitle>{board.title}</BoardTitle>
+                                      <BoardTime>
+                                          작성일: {dayjs(board.createdAt).format('YYYY년 MM월 DD일 HH시 mm분')}
+                                      </BoardTime>
+                                      <BoardAuthor>
+                                          작성자: {board.user === null ? '탈퇴된 사용자입니다.' : board.user.name}
+                                      </BoardAuthor>
+                                  </ContentBox>
+                              </BoardBox>
+                          ))}
+                </BoardWrapper>
+            </Wrapper>
+            <div>
+                {pagesIndex > 0 ? <button onClick={() => setPagesIndex((prev) => prev - 1)}>이전</button> : <></>}
+
+                <div>
+                    {pages[pagesIndex]?.map((page) => {
+                        return (
+                            <button
+                                key={page}
+                                onClick={() => setPage(page)}
+                                style={{
+                                    padding: '10px',
+                                    background: page === page ? 'red' : 'white',
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                {page}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {pagesIndex < pages.length - 1 ? (
+                    <button onClick={() => setPagesIndex((prev) => prev + 1)}>다음</button>
+                ) : (
+                    <></>
+                )}
+            </div>
+        </div>
     );
 };
 

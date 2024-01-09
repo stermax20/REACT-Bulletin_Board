@@ -7,6 +7,10 @@ import styled from 'styled-components';
 const BoardDetail = () => {
     const params = useParams();
     const navigate = useNavigate();
+
+    const [isLoading, setIsLoading] = useState(true);
+    const [isError, setIsError] = useState(false);
+
     const userId = getUserId();
     const [postDetail, setPostDetail] = useState(null);
 
@@ -16,27 +20,34 @@ const BoardDetail = () => {
             await boardAPI.deletePost(id);
             alert('글이 삭제되었습니다.');
             navigate('/');
-        } catch (error) {
-            console.error('Error deleting post:', error);
-        }
+        } catch (error) {}
     };
 
     useEffect(() => {
         const fetchBoards = async (id) => {
             try {
+                setIsLoading(true);
+
                 const response = await boardAPI.fetchDetail(id);
+
                 setPostDetail(response.data);
             } catch (error) {
-                console.error('Error fetching post detail:', error);
+                setIsError(true);
             }
+
+            setIsLoading(false);
         };
 
         const id = Number(params.id);
         fetchBoards(id);
     }, [params.id]);
 
-    if (postDetail === null) {
-        return <></>;
+    if (isLoading) {
+        return <p>로딩중..</p>;
+    }
+
+    if (isError) {
+        return <p>오류가 발생했습니다.</p>;
     }
 
     return (

@@ -1,8 +1,13 @@
 import customAxios from '.';
 
 const boardAPI = {
-    fetchAll: async () => {
-        const { data } = await customAxios.get('/posts');
+    fetchAll: async (page) => {
+        const { data } = await customAxios.get('/posts', {
+            params: {
+                page,
+                size: 10,
+            },
+        });
 
         return data;
     },
